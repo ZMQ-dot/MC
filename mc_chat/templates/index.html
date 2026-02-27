@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Minecraft 聊天室</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="login-page" class="page active">
+        <div class="login-container">
+            <div class="mc-logo">
+                <div class="pixel-block"></div>
+            </div>
+            <h1>Minecraft 聊天室</h1>
+            
+            <div id="step-nickname" class="step">
+                <h2>请输入你的昵称</h2>
+                <input type="text" id="nickname-input" placeholder="输入昵称..." maxlength="20">
+                <button id="nickname-btn" class="mc-btn">下一步</button>
+            </div>
+            
+            <div id="step-skin" class="step hidden">
+                <h2>上传你的皮肤</h2>
+                <div class="skin-preview">
+                    <div id="skin-model" class="skin-model">
+                        <div class="model-head"></div>
+                        <div class="model-body"></div>
+                        <div class="model-arms"></div>
+                        <div class="model-legs"></div>
+                    </div>
+                </div>
+                <label for="skin-upload" class="upload-label">
+                    <span class="upload-icon">📁</span>
+                    选择皮肤文件 (PNG)
+                </label>
+                <input type="file" id="skin-upload" accept=".png" hidden>
+                <p class="hint">支持 Minecraft 标准皮肤格式 (64x64 或 64x32 PNG)</p>
+                <button id="enter-btn" class="mc-btn" disabled>进入聊天室</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主页面 -->
+    <div id="main-page" class="page hidden">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="user-profile">
+                <img id="user-avatar" class="avatar" src="" alt="头像">
+                <span id="user-nickname" class="nickname"></span>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-view="home">🏠 首页</button>
+                <button class="nav-btn" data-view="friends">👥 好友</button>
+                <button class="nav-btn" data-view="groups">📢 群聊</button>
+            </nav>
+            
+            <div class="rooms-list" id="rooms-list">
+                <h3>我的房间</h3>
+                <div id="rooms-container"></div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 首页 -->
+            <div id="view-home" class="view active">
+                <h2>欢迎回来，<span id="welcome-name"></span>!</h2>
+                
+                <div class="action-cards">
+                    <div class="action-card" id="card-friend">
+                        <div class="card-icon">🤝</div>
+                        <h3>交友</h3>
+                        <p>与好友一对一聊天</p>
+                        <button class="mc-btn small" onclick="showInviteModal('friend')">创建邀请</button>
+                        <button class="mc-btn small secondary" onclick="showJoinModal('friend')">加入好友</button>
+                    </div>
+                    
+                    <div class="action-card" id="card-group">
+                        <div class="card-icon">👥</div>
+                        <h3>群聊</h3>
+                        <p>多人聊天和语音</p>
+                        <button class="mc-btn small" onclick="showInviteModal('group')">创建群聊</button>
+                        <button class="mc-btn small secondary" onclick="showJoinModal('group')">加入群聊</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 好友列表 -->
+            <div id="view-friends" class="view hidden">
+                <h2>我的好友</h2>
+                <div id="friends-list" class="list-container">
+                    <p class="empty-tip">暂无好友，快去创建邀请吧!</p>
+                </div>
+            </div>
+
+            <!-- 群聊列表 -->
+            <div id="view-groups" class="view hidden">
+                <h2>我的群聊</h2>
+                <div id="groups-list" class="list-container">
+                    <p class="empty-tip">暂无群聊，快去创建群聊吧!</p>
+                </div>
+            </div>
+
+            <!-- 聊天视图 -->
+            <div id="view-chat" class="view hidden">
+                <div class="chat-header">
+                    <button class="back-btn" onclick="showView('home')">← 返回</button>
+                    <div class="chat-info">
+                        <img id="chat-avatar" class="chat-avatar" src="" alt="">
+                        <div>
+                            <h3 id="chat-name"></h3>
+                            <span id="chat-members" class="chat-members"></span>
+                        </div>
+                    </div>
+                    <button id="voice-chat-btn" class="voice-chat-btn hidden" onclick="toggleVoiceChat()">
+                        🎤 语音聊天
+                    </button>
+                    <button id="invite-to-room-btn" class="invite-to-room-btn hidden" onclick="showInviteToRoomModal()">
+                        ➕ 邀请他人
+                    </button>
+                </div>
+                
+                <div class="chat-container">
+                    <div id="messages-container" class="messages-container"></div>
+                    
+                    <div class="input-area">
+                        <button class="plus-btn" onclick="showCommandsMenu()">+</button>
+                        
+                        <div id="commands-menu" class="commands-menu hidden">
+                            <h4>Minecraft 命令</h4>
+                            <div class="commands-grid">
+                                <button class="command-btn" data-cmd="/tp">传送</button>
+                                <button class="command-btn" data-cmd="/gamemode">游戏模式</button>
+                                <button class="command-btn" data-cmd="/time">时间</button>
+                                <button class="command-btn" data-cmd="/weather">天气</button>
+                                <button class="command-btn" data-cmd="/give">给予物品</button>
+                                <button class="command-btn" data-cmd="/spawnpoint">出生点</button>
+                                <button class="command-btn" data-cmd="/difficulty">难度</button>
+                                <button class="command-btn" data-cmd="/clear">清除物品</button>
+                                <button class="command-btn" data-cmd="/effect">状态效果</button>
+                                <button class="command-btn" data-cmd="/xp">经验</button>
+                            </div>
+                        </div>
+                        
+                        <input type="text" id="message-input" class="message-input" placeholder="输入消息..." autocomplete="off">
+
+                        <button id="voice-btn" class="voice-btn" 
+                            onmousedown="startRecording(); return false;" 
+                            onmouseup="stopRecording(); return false;" 
+                            onmouseleave="stopRecording(); return false;" 
+                            ontouchstart="startRecording(); event.preventDefault(); return false;" 
+                            ontouchend="stopRecording(); event.preventDefault(); return false;"
+                            ontouchcancel="stopRecording(); event.preventDefault(); return false;">
+                            🎤
+                        </button>
+
+                        <button id="send-btn" class="send-btn" onclick="sendMessage()">发送</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 创建邀请弹窗 -->
+    <div id="invite-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="invite-title">创建邀请</h3>
+            <div class="invite-content">
+                <p>邀请码将在 10 分钟后过期</p>
+                <div id="invite-code-display" class="invite-code hidden">
+                    <span id="invite-code" class="code"></span>
+                    <button class="copy-btn" onclick="copyInviteCode()">复制</button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="mc-btn secondary" onclick="closeModal('invite-modal')">取消</button>
+                <button class="mc-btn" onclick="createInvite()">生成邀请码</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加入邀请弹窗 -->
+    <div id="join-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="join-title">加入聊天</h3>
+            <div class="join-content">
+                <input type="text" id="join-code-input" class="code-input" placeholder="输入邀请码" maxlength="6">
+                <p id="join-error" class="error-text hidden"></p>
+            </div>
+            <div class="modal-actions">
+                <button class="mc-btn secondary" onclick="closeModal('join-modal')">取消</button>
+                <button class="mc-btn" onclick="joinInvite()">加入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 传送坐标弹窗 -->
+    <div id="tp-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>传送命令</h3>
+            <div class="tp-content">
+                <div class="coord-inputs">
+                    <input type="number" id="coord-x" placeholder="X" class="coord-input">
+                    <input type="number" id="coord-y" placeholder="Y" class="coord-input">
+                    <input type="number" id="coord-z" placeholder="Z" class="coord-input">
+                </div>
+                <p class="hint">输入目标坐标位置</p>
+            </div>
+            <div class="modal-actions">
+                <button class="mc-btn secondary" onclick="closeModal('tp-modal')">取消</button>
+                <button class="mc-btn" onclick="sendTpCommand()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 邀请他人加入群聊弹窗 -->
+    <div id="invite-to-room-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>邀请他人加入群聊</h3>
+            <div class="invite-content">
+                <p>生成一个邀请码，分享给好友邀请他加入本群聊</p>
+                <div id="invite-to-room-code-display" class="invite-code hidden">
+                    <span id="invite-to-room-code" class="code"></span>
+                    <button class="copy-btn" onclick="copyInviteToRoomCode()">复制</button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="mc-btn secondary" onclick="closeModal('invite-to-room-modal')">取消</button>
+                <button class="mc-btn" onclick="generateRoomInviteCode()">生成邀请码</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 语音聊天面板 -->
+    <div id="voice-panel" class="voice-panel hidden">
+        <div class="voice-panel-header">
+            <span>🎤 语音聊天中</span>
+            <button class="close-voice-btn" onclick="leaveVoiceChat()">✕</button>
+        </div>
+        <div id="voice-participants" class="voice-participants">
+            <div class="voice-participant" id="voice-user-self">
+                <span class="status-dot"></span>
+                <span id="voice-self-name"></span>
+            </div>
+        </div>
+        <button id="mute-btn" class="mute-btn" onclick="toggleMute()">🔊 静音</button>
+    </div>
+
+    <!-- 语音邀请通知（右上角） -->
+    <div id="voice-notification" class="voice-notification hidden">
+        <div class="notification-content">
+            <div class="notification-icon">🔔</div>
+            <div>
+                <div id="voice-notification-text">有人发起了语音聊天</div>
+                <button class="mc-btn small" onclick="joinIncomingVoiceChat()">加入语音聊天</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右键菜单 -->
+    <div id="context-menu" class="context-menu hidden">
+        <div class="context-menu-item" onclick="deleteRoom()">🗑️ 删除聊天</div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
