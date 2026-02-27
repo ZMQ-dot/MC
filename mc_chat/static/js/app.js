@@ -343,30 +343,6 @@ function initSocketEvents() {
             addRoomToList(data.room_id, data.room_name, data.room_type);
         }
 
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'pre-fix',
-                hypothesisId: 'H1',
-                location: 'static/js/app.js:socket.join_success',
-                message: 'join_success received',
-                data: {
-                    roomId: data.room_id,
-                    roomName: data.room_name,
-                    roomType: data.room_type,
-                    memberCount: data.members?.length || 0
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
-
         switchToChatView();
         openChat(data.room_id, data.room_name, data.room_type, data.members);
     });
@@ -375,27 +351,6 @@ function initSocketEvents() {
         console.log('❌ 加入错误:', data);
         document.getElementById('join-error').textContent = data.message;
         document.getElementById('join-error').classList.remove('hidden');
-
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'pre-fix',
-                hypothesisId: 'H1',
-                location: 'static/js/app.js:socket.join_error',
-                message: 'join_error received',
-                data: {
-                    message: data.message
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
     });
 
     socket.on('new_message', (data) => {
@@ -479,30 +434,6 @@ function initSocketEvents() {
     socket.on('user_joined_voice', (data) => {
         console.log('用户加入语音房间:', data);
 
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'voice-pre-fix',
-                hypothesisId: 'V1',
-                location: 'static/js/app.js:socket.user_joined_voice',
-                message: 'user_joined_voice received',
-                data: {
-                    selfUserId: userId,
-                    roomId: currentRoomId,
-                    joinedUserId: data.user_id,
-                    existingUserIds: (data.existing_users || []).map(u => u.user_id)
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
-
         // 如果是自己加入，连接到已存在的用户
         if (data.user_id === userId) {
             data.existing_users.forEach(existingUser => {
@@ -539,29 +470,6 @@ function initSocketEvents() {
     socket.on('voice_room_users', (data) => {
         console.log('语音房间用户列表:', data);
 
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'voice-pre-fix',
-                hypothesisId: 'V1',
-                location: 'static/js.app.js:socket.voice_room_users',
-                message: 'voice_room_users received',
-                data: {
-                    selfUserId: userId,
-                    roomId: currentRoomId,
-                    userIds: (data.users || []).map(u => u.user_id)
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
-
         data.users.forEach(user => {
             createPeerConnection(user.user_id, true);
         });
@@ -581,28 +489,6 @@ function initSocketEvents() {
     socket.on('webrtc_offer', async (data) => {
         console.log('收到 Offer 来自:', data.from_user_id);
 
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'voice-pre-fix',
-                hypothesisId: 'V2',
-                location: 'static/js/app.js:socket.webrtc_offer',
-                message: 'webrtc_offer received',
-                data: {
-                    selfUserId: userId,
-                    roomId: currentRoomId,
-                    fromUserId: data.from_user_id
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
         try {
             const peerId = getPeerId(data.from_user_id, userId);
             
@@ -630,28 +516,6 @@ function initSocketEvents() {
     socket.on('webrtc_answer', async (data) => {
         console.log('收到 Answer 来自:', data.from_user_id);
 
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'voice-pre-fix',
-                hypothesisId: 'V2',
-                location: 'static/js/app.js:socket.webrtc_answer',
-                message: 'webrtc_answer received',
-                data: {
-                    selfUserId: userId,
-                    roomId: currentRoomId,
-                    fromUserId: data.from_user_id
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
         try {
             const peerId = getPeerId(data.from_user_id, userId);
             const peerConnection = peerConnections[peerId];
@@ -672,29 +536,6 @@ function initSocketEvents() {
             
             if (peerConnection && data.candidate) {
                 await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-
-                // #region agent log
-                fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Debug-Session-Id': 'da94d2'
-                    },
-                    body: JSON.stringify({
-                        sessionId: 'da94d2',
-                        runId: 'voice-pre-fix',
-                        hypothesisId: 'V2',
-                        location: 'static/js/app.js:socket.webrtc_ice_candidate',
-                        message: 'webrtc_ice_candidate applied',
-                        data: {
-                            selfUserId: userId,
-                            roomId: currentRoomId,
-                            fromUserId: data.from_user_id
-                        },
-                        timestamp: Date.now()
-                    })
-                }).catch(() => {});
-                // #endregion
             }
         } catch (error) {
             console.error('添加 ICE 候选失败:', error);
@@ -733,30 +574,6 @@ function createPeerConnection(targetUserId, isInitiator) {
 
     console.log(`创建 Peer 连接：${userId} -> ${targetUserId}, 发起者：${isInitiator}`);
 
-    // #region agent log
-    fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Debug-Session-Id': 'da94d2'
-        },
-        body: JSON.stringify({
-            sessionId: 'da94d2',
-            runId: 'voice-pre-fix',
-            hypothesisId: 'V2',
-            location: 'static/js/app.js:createPeerConnection',
-            message: 'createPeerConnection',
-            data: {
-                selfUserId: userId,
-                roomId: currentRoomId,
-                targetUserId,
-                isInitiator
-            },
-            timestamp: Date.now()
-        })
-    }).catch(() => {});
-    // #endregion
-
     const peerConnection = new RTCPeerConnection(rtcConfig);
     peerConnections[peerId] = peerConnection;
 
@@ -771,29 +588,6 @@ function createPeerConnection(targetUserId, isInitiator) {
     peerConnection.ontrack = (event) => {
         console.log('收到远端音频流:', targetUserId);
         playRemoteStream(event.streams[0], targetUserId);
-
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'voice-pre-fix',
-                hypothesisId: 'V4',
-                location: 'static/js/app.js:peerConnection.ontrack',
-                message: 'remote track received',
-                data: {
-                    selfUserId: userId,
-                    roomId: currentRoomId,
-                    fromUserId: targetUserId
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
     };
 
     // ICE 候选
@@ -806,66 +600,19 @@ function createPeerConnection(targetUserId, isInitiator) {
                 candidate: event.candidate,
                 from_user_id: userId
             });
-
-            // #region agent log
-            fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Debug-Session-Id': 'da94d2'
-                },
-                body: JSON.stringify({
-                    sessionId: 'da94d2',
-                    runId: 'voice-pre-fix',
-                    hypothesisId: 'V2',
-                    location: 'static/js/app.js:peerConnection.onicecandidate',
-                    message: 'ice candidate sent',
-                    data: {
-                        selfUserId: userId,
-                        roomId: currentRoomId,
-                        targetUserId
-                    },
-                    timestamp: Date.now()
-                })
-            }).catch(() => {});
-            // #endregion
         }
     };
 
     // 连接状态变化
     peerConnection.onconnectionstatechange = () => {
         console.log(`Peer 连接状态 (${targetUserId}):`, peerConnection.connectionState);
-        
+
         if (peerConnection.connectionState === 'connected') {
             addVoiceParticipant(targetUserId);
-        } else if (peerConnection.connectionState === 'failed' || 
+        } else if (peerConnection.connectionState === 'failed' ||
                    peerConnection.connectionState === 'disconnected') {
             removeVoiceParticipant(targetUserId);
         }
-
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'voice-pre-fix',
-                hypothesisId: 'V4',
-                location: 'static/js/app.js:peerConnection.onconnectionstatechange',
-                message: 'connection state change',
-                data: {
-                    selfUserId: userId,
-                    roomId: currentRoomId,
-                    targetUserId,
-                    state: peerConnection.connectionState
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
     };
 
     // 如果是发起者，创建并发送 Offer
@@ -910,30 +657,6 @@ function playRemoteStream(stream, userId) {
     audioEl.srcObject = stream;
     audioEl.play().catch(e => {
         console.error('播放远端音频失败:', e);
-
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'voice-pre-fix',
-                hypothesisId: 'V4',
-                location: 'static/js/app.js:playRemoteStream',
-                message: 'play remote audio failed',
-                data: {
-                    selfUserId: window.userId || null,
-                    remoteUserId: userId,
-                    errorName: e?.name || null,
-                    errorMessage: e?.message || null
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
     });
 }
 
@@ -1182,28 +905,6 @@ function appendMessage(data) {
 
                 const audio = new Audio(src);
 
-                // #region agent log
-                fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Debug-Session-Id': 'da94d2'
-                    },
-                    body: JSON.stringify({
-                        sessionId: 'da94d2',
-                        runId: 'voice-message-debug',
-                        hypothesisId: 'VM5',
-                        location: 'static/js/app.js:appendMessage',
-                        message: 'voice play clicked',
-                        data: {
-                            selfUserId: userId,
-                            roomId: currentRoomId
-                        },
-                        timestamp: Date.now()
-                    })
-                }).catch(() => {});
-                // #endregion
-
                 audio.play().catch(e => {
                     console.error('播放语音消息失败:', e);
                 });
@@ -1335,28 +1036,6 @@ async function startRecording() {
         audioChunks = [];
         recordStartTime = Date.now();
 
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'voice-message-debug',
-                hypothesisId: 'VM1',
-                location: 'static/js/app.js:startRecording',
-                message: 'voice recording started',
-                data: {
-                    userId,
-                    roomId: currentRoomId
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
-
         mediaRecorder.ondataavailable = (e) => {
             if (e.data.size > 0) {
                 audioChunks.push(e.data);
@@ -1368,29 +1047,6 @@ async function startRecording() {
 
             // 录音时长太短（例如误触/快速点击），不发送语音消息，只做清理
             if (duration < 300 || audioChunks.length === 0) {
-                // #region agent log
-                fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Debug-Session-Id': 'da94d2'
-                    },
-                    body: JSON.stringify({
-                        sessionId: 'da94d2',
-                        runId: 'voice-message-debug',
-                        hypothesisId: 'VM2',
-                        location: 'static/js/app.js:mediaRecorder.onstop',
-                        message: 'voice recording too short, skipped',
-                        data: {
-                            userId,
-                            roomId: currentRoomId,
-                            duration,
-                            chunks: audioChunks.length
-                        },
-                        timestamp: Date.now()
-                    })
-                }).catch(() => {});
-                // #endregion
 
                 stream.getTracks().forEach(track => track.stop());
                 return;
@@ -1401,30 +1057,6 @@ async function startRecording() {
 
             reader.onloadend = () => {
                 const base64Data = reader.result.split(',')[1];
-
-                // #region agent log
-                fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Debug-Session-Id': 'da94d2'
-                    },
-                    body: JSON.stringify({
-                        sessionId: 'da94d2',
-                        runId: 'voice-message-debug',
-                        hypothesisId: 'VM3',
-                        location: 'static/js/app.js:reader.onloadend',
-                        message: 'voice message ready to send',
-                        data: {
-                            userId,
-                            roomId: currentRoomId,
-                            duration,
-                            size: audioBlob.size
-                        },
-                        timestamp: Date.now()
-                    })
-                }).catch(() => {});
-                // #endregion
 
                 socket.emit('send_message', {
                     user_id: userId,
@@ -1499,29 +1131,6 @@ function createInvite() {
     const roomName = currentInviteType === 'group' ?
         `${userNickname}的群聊` : `${userNickname}的聊天`;
 
-    // #region agent log
-    fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Debug-Session-Id': 'da94d2'
-        },
-        body: JSON.stringify({
-            sessionId: 'da94d2',
-            runId: 'pre-fix',
-            hypothesisId: 'H1',
-            location: 'static/js/app.js:createInvite',
-            message: 'createInvite called',
-            data: {
-                userId,
-                currentInviteType,
-                roomName
-            },
-            timestamp: Date.now()
-        })
-    }).catch(() => {});
-    // #endregion
-
     socket.emit('create_invite', {
         user_id: userId,
         type: currentInviteType,
@@ -1555,28 +1164,6 @@ function joinInvite() {
         document.getElementById('join-error').classList.remove('hidden');
         return;
     }
-
-    // #region agent log
-    fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Debug-Session-Id': 'da94d2'
-        },
-        body: JSON.stringify({
-            sessionId: 'da94d2',
-            runId: 'pre-fix',
-            hypothesisId: 'H1',
-            location: 'static/js/app.js:joinInvite',
-            message: 'joinInvite emit',
-            data: {
-                userId,
-                code
-            },
-            timestamp: Date.now()
-        })
-    }).catch(() => {});
-    // #endregion
 
     socket.emit('join_invite', {
         user_id: userId,
@@ -1689,27 +1276,6 @@ async function startVoiceChat() {
 
         console.log('麦克风已开启');
 
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'voice-pre-fix',
-                hypothesisId: 'V1',
-                location: 'static/js/app.js:startVoiceChat',
-                message: 'startVoiceChat success',
-                data: {
-                    userId,
-                    roomId: currentRoomId
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
         isVoiceChatActive = true;
 
         // 设置自己的名字在语音面板
@@ -1734,30 +1300,6 @@ async function startVoiceChat() {
         showVoicePanel();
     } catch (error) {
         console.error('获取麦克风失败:', error);
-
-        // #region agent log
-        fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Debug-Session-Id': 'da94d2'
-            },
-            body: JSON.stringify({
-                sessionId: 'da94d2',
-                runId: 'voice-pre-fix',
-                hypothesisId: 'V3',
-                location: 'static/js/app.js:startVoiceChat',
-                message: 'startVoiceChat getUserMedia failed',
-                data: {
-                    userId,
-                    roomId: currentRoomId,
-                    errorName: error?.name || null,
-                    errorMessage: error?.message || null
-                },
-                timestamp: Date.now()
-            })
-        }).catch(() => {});
-        // #endregion
 
         alert('无法访问麦克风，请检查权限设置');
     }
@@ -1827,30 +1369,6 @@ async function joinIncomingVoiceChat() {
     if (notif) {
         notif.classList.add('hidden');
     }
-
-    // #region agent log
-    fetch('http://127.0.0.1:7383/ingest/e627f496-4fc2-4664-a071-745b69789d36', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Debug-Session-Id': 'da94d2'
-        },
-        body: JSON.stringify({
-            sessionId: 'da94d2',
-            runId: 'voice-pre-fix-2',
-            hypothesisId: 'V1',
-            location: 'static/js/app.js:joinIncomingVoiceChat',
-            message: 'join incoming voice invite',
-            data: {
-                selfUserId: userId,
-                roomId: currentRoomId,
-                pendingRoomId: pendingVoiceInviteRoomId,
-                fromUser: pendingVoiceInviteFromUser
-            },
-            timestamp: Date.now()
-        })
-    }).catch(() => {});
-    // #endregion
 
     // 直接调用已有的语音开始逻辑
     if (currentRoomId === pendingVoiceInviteRoomId) {
